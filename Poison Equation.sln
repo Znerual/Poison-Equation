@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "Poison Equation", "Poison Equation.vfproj", "{6F46964A-56A9-4EC2-8059-78E28E9EFC9F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F46964A-56A9-4EC2-8059-78E28E9EFC9F}.Debug|x86.ActiveCfg = Debug|Win32
+		{6F46964A-56A9-4EC2-8059-78E28E9EFC9F}.Debug|x86.Build.0 = Debug|Win32
+		{6F46964A-56A9-4EC2-8059-78E28E9EFC9F}.Release|x86.ActiveCfg = Release|Win32
+		{6F46964A-56A9-4EC2-8059-78E28E9EFC9F}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5E2A874E-0C70-4341-99B4-7504F4F856D0}
+	EndGlobalSection
+EndGlobal
