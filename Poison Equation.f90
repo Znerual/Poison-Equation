@@ -97,40 +97,13 @@
         call lufaktorisierungGauss(u, l, zGauss, n-1,n-1, timelu)
         !print*, "TIME (FAKTORISATION): " , timelu
                 !!Matrix zum Test anzeigen
-                !write(*,*) "L Matrix"
-                !do i = 1, n-1
-                !    do j = 1, n-1
-                !        write(*,'(F8.4)', advance="no") l(i,j)
-                !    end do
-                !    write(*,*) ""
-                !end do
-                !
-                !!Matrix zum Test anzeigen
-                !write(*,*) "U Matrix"
-                !do i = 1, n-1
-                !    do j = 1, n-1
-                !        write(*,'(F8.4)', advance="no") u(i,j)
-                !    end do
-                !    write(*,*) ""
-                !end do
-                !
-                !write(*,*) "LU - A Matrix"
+                !call showMatrix(l,"L")
+                !call showMatrix(u,"u")
                 !t = Matmul(l,u)
-                !do i = 1, n-1
-                !    do j = 1, n-1
-                !        write(*,'(F8.4)', advance="no") t(i,j) - d(i,j)
-                !    end do
-                !    write(*,*) ""
-                !end do
+                !call showMatrix(t,"LU - A Matrix")
                 !!Als Test die Build in Methode aufrufen (Intel Compiler)
-                !write(*,*) "Intel RF"
                 !call dgetrf(n-1,n-1,d,n-1,ip,k)
-                !do i = 1, n-1
-                !do j = 1, n-1
-                !    write(*,'(F8.4)', advance="no")  d(i,j)
-                !end do
-                !write(*,*) ""
-                !end do
+                !call showMatrix(d,"INTEL RL Test")
     
         call solveGauss(zGauss, u, n-1,n-1,timesolve)
         !print*, "TIME (SOlVE) : " , timesolve
@@ -167,7 +140,6 @@
             end if
         end do
     
-    
         deallocate(d)
         deallocate(l)
         deallocate(u)
@@ -187,6 +159,7 @@
     end do
     
     close(100)
+    
     end program PoisonEquation
 
     function f(x)
