@@ -136,7 +136,7 @@
     
     subroutine showMatrix(a, name)
     implicit none
-    double precision, dimension(:,:), intent(inout) :: a
+    double precision, dimension(:,:), intent(in) :: a
     character(*), intent(in), optional :: name
     integer :: i, j
     write(*,*) "*** Show Matrix ", name, " ***"
