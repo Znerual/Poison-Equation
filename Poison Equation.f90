@@ -17,7 +17,7 @@
     use LinearSystems
     implicit none
     double precision :: x, start_time, stop_time
-    double precision :: f
+    double precision :: f, exakt
     integer :: n = 700
     double precision :: delta_x 
     double precision, dimension(:,:), allocatable :: d, l , u , t, diag, subdiag
@@ -27,7 +27,10 @@
     integer :: i, j, k, info
     
     open(unit=100, file="time.dat",action="write")
-    do n = 10, 500, 10
+    open(unit=101, file="lsgn10.dat",action="write")
+    open(unit=102,file="lsgn100.dat", action ="write")
+    
+    do n = 10, 8000, 10
     
     
         allocate(d(n-1,n-1))
@@ -56,7 +59,8 @@
         zLAPACK = 0d0
     
         delta_x = 1d0 / n
-        !Bestimmung der Matrix für die Ableitung - Triagonale Matrix
+        
+        !Bestimmung der Matrix für die Ableitung - Tridiagonale Matrix
         d(1,1) = 2d0
         diag(1,1) = 2d0
         d(1,2) = -1d0
@@ -73,73 +77,93 @@
         d(n-1, n-1) = 2d0
         diag(n-1, n-1) =2d0
         subdiag(n-1, n-2) = -1d0
+        
+        
+        
         !Bestimmung von b (im z Vektor weil er in lufak.. zu z wird)
         do i = 1, n - 1
-            zGauss(i) = f(i * delta_x)
-            zThomas(i) = f(i * delta_x)
-            zThomasLAPACK(i) = f(i * delta_x)
-            zLAPACK(i) = f(i * delta_x)
+            zGauss(i) = delta_x **2 * f(i * delta_x)
+            zThomas(i) = delta_x **2 *f(i * delta_x)
+            zThomasLAPACK(i) = delta_x **2 *f(i * delta_x)
+            zLAPACK(i) = delta_x **2 *f(i * delta_x)
         end do
-        !!Matrix zum Test anzeigen
-        !do i = 1, n-1
-        !    do j = 1, n-1
-        !        write(*,'(F8.4)', advance="no") d(i,j)
-        !    end do
-        !    write(*,*) ""
-        !end do
-        !write(*,*)
     
     
         !GAUß
-        !print*, "GAUSS"
-        u = d
+        if (n < 600) then
+            u = d
+            call lufaktorisierungGauss(u, l, zGauss, n-1,n-1, timelu)
+            !print*, "TIME (FAKTORISATION): " , timelu
+                    !!Matrix zum Test anzeigen
+                    !call showMatrix(l,"L")
+                    !call showMatrix(u,"u")
+                    !t = Matmul(l,u)
+                    !call showMatrix(t,"LU - A Matrix")
+                    !!Als Test die Build in Methode aufrufen (Intel Compiler)
+                    !call dgetrf(n-1,n-1,d,n-1,ip,k)
+                    !call showMatrix(d,"INTEL RL Test")
     
-        call lufaktorisierungGauss(u, l, zGauss, n-1,n-1, timelu)
-        !print*, "TIME (FAKTORISATION): " , timelu
-                !!Matrix zum Test anzeigen
-                !call showMatrix(l,"L")
-                !call showMatrix(u,"u")
-                !t = Matmul(l,u)
-                !call showMatrix(t,"LU - A Matrix")
-                !!Als Test die Build in Methode aufrufen (Intel Compiler)
-                !call dgetrf(n-1,n-1,d,n-1,ip,k)
-                !call showMatrix(d,"INTEL RL Test")
-    
-        call solveGauss(zGauss, u, n-1,n-1,timesolve)
-        !print*, "TIME (SOlVE) : " , timesolve
-        !print*, "TIME (TOTAL) : " , timesolve + timelu
-        timeGauss = timesolve + timelu
+            call solveGauss(zGauss, u, n-1,n-1,timesolve)
+            timeGauss = timesolve + timelu
+        end if
+        
+        
         u = d
         !LAPACK ROUTINE (vom INTEL COMPILER + GNU COMPILER)
         call CPU_TIME(start_time)
         call dgesv(n-1, 1, u, n-1,ip,zLAPACK,n-1, info)  
         call CPU_TIME(stop_time)
-        !print*,"LAPACK DGESV TIME (TOTAL) : " , stop_time - start_time
         timeGaussLapack = stop_time - start_time
-        !LAPACK ALGORITHMUS (vom GNU COMPILER)
-        !call CPU_TIME(start_time)
-        !call dptsv(n-1, 1, diag, subdiag, zThomasLAPACK,n-1, info)
-        !call CPU_TIME(stop_time)
-        !timeThomasLAPACK = stop_time - start_time
-        !print*,"LAPACK TIME DPTSV (TOTAL) : " , stop_time - start_time
+    !LAPACK ALGORITHMUS (vom GNU COMPILER)
+    !call CPU_TIME(start_time)
+    !call dptsv(n-1, 1, diag, subdiag, zThomasLAPACK,n-1, info)
+    !call CPU_TIME(stop_time)
+    !timeThomasLAPACK = stop_time - start_time
         
     
-        !THOMAS ALGORITHM
-        !print*, ""
-        !print*, "THOMAS"
+        !THOMAS ALGORITHMUS
         u = d 
         call solveThomas(zThomas, u, n-1, timeThomas)
-        !print*, "THOMAS TIME (TOTAL) : ", timeThomas
-    
+        
+        
+        !Vergleiche die Ergebnisse
         do j = 1, n - 1
-            if (abs(zGauss(j) - zLAPACK(j)) > 1d-5) then
-                print*, "Fehler in Zeile bei Gauss" , j 
+            if (n < 600) then
+                if (abs(zGauss(j) - zLAPACK(j)) > 1d-5) then
+                    print*, "Fehler in Zeile bei Gauss" , j 
+                end if
             end if
             if (abs(zThomas(j) - zLAPACK(j)) > 1d-5) then
                 print*, "Fehler in Zeile bei Thomas" , j 
             end if
+            if (abs(zThomas(j) - zThomasLAPACK(j)) > 1d-5) then
+                print*, "Fehler in Zeile bei Thomas" , j 
+            end if
         end do
     
+        !Ausgabe für n=10 und n= 100 in die Datein schreiben
+        if (n == 10) then
+            write(101, '(F8.4 F8.4 F8.4 F8.4 F8.4)'), 0d0, 0d0, 0d0, 0d0, 0d0 !Randbed.
+!write(101, '(F8.4 F8.4 F8.4 F8.4 F8.4 F8.4)'), 0d0, 0d0, 0d0, 0d0, 0d0, 0d0!Randbed.
+            do i = 1, n - 1
+                x = i * delta_x
+                write(101, '(F8.4 F8.4 F8.4 F8.4 F8.4)'), x, exakt(x), zGauss(i), zThomas(i), zLAPACK(i)
+!write(101, '(F8.4 F8.4 F8.4 F8.4 F8.4 F8.4)'), x, exakt(x), zGauss(i), zThomas(i), zLAPACK(i), zThomasLAPACK
+            end do       
+            write(101, '(F8.4 F8.4 F8.4 F8.4 F8.4)'), 1d0, 0d0, 0d0, 0d0, 0d0
+!write(101, '(F8.4 F8.4 F8.4 F8.4 F8.4 F8,4)'), 1d0, 0d0, 0d0, 0d0, 0d0, 0d0
+        else if (n == 100) then
+             write(102, '(F8.4 F8.4 F8.4 F8.4 F8.4)'), 0d0, 0d0, 0d0, 0d0, 0d0 !Randbed.
+!write(102, '(F8.4 F8.4 F8.4 F8.4 F8.4 F8.4)'), 0d0, 0d0, 0d0, 0d0, 0d0, 0d0 !Randbed.
+            do i = 1, n - 1
+                x = i * delta_x
+                write(102, '(F8.4 F8.4 F8.4 F8.4 F8.4)'), x, exakt(x), zGauss(i), zThomas(i), zLAPACK(i)
+!write(102, '(F8.4 F8.4 F8.4 F8.4 F8.4 F8.4)'), x, exakt(x), zGauss(i), zThomas(i), zLAPACK(i), zThomasLAPACK(i)
+            end do       
+            write(102, '(F8.4 F8.4 F8.4 F8.4 F8.4)'), 1d0, 0d0, 0d0, 0d0, 0d0
+!write(102, '(F8.4 F8.4 F8.4 F8.4 F8.4 F8.4)'), 1d0, 0d0, 0d0, 0d0, 0d0, 0d0
+        end if
+        
         deallocate(d)
         deallocate(l)
         deallocate(u)
@@ -153,18 +177,29 @@
         deallocate(zLAPACK)
     
         deallocate(ip)
+        if (n < 600) then
+            write(100, '(I8.3 F16.6 F16.6 F16.6)') n,  timeGaussLAPACK, timeThomas, timeGauss
+!write(100, '(I8.4 F8.4 F8.4 F8.4 F8.4') n, timeGaussLAPACK, timeThomas, timeThomasLAPACK, timeGauss, 
+        else     
+            write(100, '(I8.3 F16.6 F16.6 F16.6)') n,  timeGaussLAPACK, timeThomas
+!write(100, '(I8.4 F8.4 F8.4 F8.4 F8.4') n, timeGaussLAPACK, timeThomas, timeThomasLAPACK
+        end if
         
-        write(100, *) n, timeGauss, timeGaussLAPACK, timeThomas
-        !write(100, *) n, timeGauss, timeGaussLAPACK, timeThomas, timeThomasLAPACK
     end do
     
     close(100)
-    
+    close(101)
+    close(102)
     end program PoisonEquation
 
     function f(x)
         double precision :: f
         double precision, intent(in) :: x
-        f = 100d0 * exp(-10d0 * x)
+        f =  100d0 * exp(-10d0 * x)
     end function f
+    function exakt(x)
+        double precision :: exakt
+        double precision, intent(in) :: x
+        exakt = 1d0 - (1d0 - exp(-10d0)) * x - exp(-10d0 * x)
+    end function
     

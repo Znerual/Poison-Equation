@@ -47,9 +47,13 @@
 	<Files>
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+		<File RelativePath=".\lsg.pdf"/>
+		<File RelativePath=".\lsgn10.dat"/>
+		<File RelativePath=".\lsgn100.dat"/>
 		<File RelativePath=".\time.dat"/></Filter>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath=".\GaußElimination.f90"/>
+		<File RelativePath=".\LinearSystems.f90"/>
+		<File RelativePath=".\plotLsg.gp"/>
 		<File RelativePath=".\Poison Equation.f90"/></Filter>
 		<File RelativePath=".\ReadMe.txt"/></Files>
 	<Globals/></VisualStudioProject>
