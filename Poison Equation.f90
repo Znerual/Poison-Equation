@@ -20,8 +20,8 @@
     double precision :: f, exakt
     integer :: n = 700
     double precision :: delta_x 
-    double precision, dimension(:,:), allocatable :: d, l , u , t, diag, subdiag
-    double precision, dimension(:), allocatable :: zGauss , zLAPACK, zThomas, zThomasLAPACK
+    double precision, dimension(:,:), allocatable :: d, l , u , t
+    double precision, dimension(:), allocatable :: zGauss , zLAPACK, zThomas, zThomasLAPACK, diag, subdiag
     double precision :: timelu = 0d0, timesolve = 0d0, timeGauss, timeThomas, timeGaussLapack, timeThomasLapack
     integer, dimension(:), allocatable :: ip
     integer :: i, j, k, info
@@ -34,12 +34,12 @@
     
     
         allocate(d(n-1,n-1))
-        allocate(diag(n-1,n-1))
-        allocate(subdiag(n-1,n-1))
         allocate(l(n-1,n-1))
         allocate(u(n-1,n-1))
         allocate(t(n-1,n-1))
     
+        allocate(diag(n-1))
+        allocate(subdiag(n-2))
         allocate(zGauss(n-1))
         allocate(zThomas(n-1))
         allocate(zThomasLAPACK(n-1))
@@ -62,21 +62,19 @@
         
         !Bestimmung der Matrix für die Ableitung - Tridiagonale Matrix
         d(1,1) = 2d0
-        diag(1,1) = 2d0
+        diag(1) = 2d0
         d(1,2) = -1d0
-        subdiag(1,2) = -1d0
+        subdiag(1) = -1d0
         do i = 2, n - 2
             d(i, i-1) = -1d0
             d(i, i) = 2d0
             d(i, i +1) = -1d0
-            diag(i,i) = 2d0
-            subdiag(i, i - 1) = -1d0
-            subdiag(i,i +1) = -1d0
+            diag(i) = 2d0
+            subdiag(i) = -1d0
         end do
         d(n-1,n-2) = -1d0
         d(n-1, n-1) = 2d0
-        diag(n-1, n-1) =2d0
-        subdiag(n-1, n-2) = -1d0
+        diag(n-1) =2d0
         
         
         
@@ -134,11 +132,11 @@
                 end if
             end if
             if (abs(zThomas(j) - zLAPACK(j)) > 1d-5) then
-                print*, "Fehler in Zeile bei Thomas" , j 
+                print*, "Fehler in Zeile bei Thomas Gauss" , j 
             end if
-            if (abs(zThomas(j) - zThomasLAPACK(j)) > 1d-5) then
-                print*, "Fehler in Zeile bei Thomas" , j 
-            end if
+!if (abs(zThomas(j) - zThomasLAPACK(j)) > 1d-5) then
+!    print*, "Fehler in Zeile bei Thomas" , j 
+!end if
         end do
     
         !Ausgabe für n=10 und n= 100 in die Datein schreiben
